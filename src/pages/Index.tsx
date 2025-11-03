@@ -278,14 +278,20 @@ const Index = () => {
 
                   {(newItem.type === 'video' || newItem.type === 'audio' || newItem.type === 'image' || newItem.type === 'link') && (
                     <div className="space-y-2">
-                      <Label htmlFor="url">URL или файл</Label>
+                      <Label htmlFor="url">
+                        {newItem.type === 'video' ? 'URL видео (YouTube, Rutube)' : 'URL или файл'}
+                      </Label>
                       <Input
                         id="url"
-                        placeholder="https://example.com/file"
+                        placeholder={
+                          newItem.type === 'video'
+                            ? 'https://www.youtube.com/watch?v=...'
+                            : 'https://example.com/file'
+                        }
                         value={newItem.url || ''}
                         onChange={(e) => setNewItem({ ...newItem, url: e.target.value })}
                       />
-                      {(newItem.type === 'image' || newItem.type === 'audio' || newItem.type === 'video') && (
+                      {(newItem.type === 'image' || newItem.type === 'audio') && (
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-muted-foreground">или</span>
                           <Button
@@ -301,13 +307,7 @@ const Index = () => {
                           <input
                             id="file-upload"
                             type="file"
-                            accept={
-                              newItem.type === 'image'
-                                ? 'image/*'
-                                : newItem.type === 'audio'
-                                ? 'audio/*'
-                                : 'video/*'
-                            }
+                            accept={newItem.type === 'image' ? 'image/*' : 'audio/*'}
                             className="hidden"
                             onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'url')}
                           />
@@ -569,14 +569,20 @@ const Index = () => {
 
               {(editItem.type === 'video' || editItem.type === 'audio' || editItem.type === 'image' || editItem.type === 'link') && (
                 <div className="space-y-2">
-                  <Label htmlFor="edit-url">URL или файл</Label>
+                  <Label htmlFor="edit-url">
+                    {editItem.type === 'video' ? 'URL видео (YouTube, Rutube)' : 'URL или файл'}
+                  </Label>
                   <Input
                     id="edit-url"
-                    placeholder="https://example.com/file"
+                    placeholder={
+                      editItem.type === 'video'
+                        ? 'https://www.youtube.com/watch?v=...'
+                        : 'https://example.com/file'
+                    }
                     value={editItem.url || ''}
                     onChange={(e) => setEditItem({ ...editItem, url: e.target.value })}
                   />
-                  {(editItem.type === 'image' || editItem.type === 'audio' || editItem.type === 'video') && (
+                  {(editItem.type === 'image' || editItem.type === 'audio') && (
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">или</span>
                       <Button
@@ -592,13 +598,7 @@ const Index = () => {
                       <input
                         id="edit-file-upload"
                         type="file"
-                        accept={
-                          editItem.type === 'image'
-                            ? 'image/*'
-                            : editItem.type === 'audio'
-                            ? 'audio/*'
-                            : 'video/*'
-                        }
+                        accept={editItem.type === 'image' ? 'image/*' : 'audio/*'}
                         className="hidden"
                         onChange={(e) => e.target.files?.[0] && handleEditFileUpload(e.target.files[0], 'url')}
                       />
