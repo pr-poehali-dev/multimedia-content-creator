@@ -69,6 +69,8 @@ const Index = () => {
   });
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
   const [viewItem, setViewItem] = useState<MediaItem | null>(null);
+  const [editItem, setEditItem] = useState<MediaItem | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const handleAddItem = () => {
     if (!newItem.title) {
@@ -91,6 +93,30 @@ const Index = () => {
     setIsOpen(false);
     setNewItem({ type: 'image', category: 'Достопримечательность' });
     toast.success('Материал добавлен!');
+  };
+
+  const handleEditItem = () => {
+    if (!editItem?.title) {
+      toast.error('Укажите название');
+      return;
+    }
+
+    setItems(items.map((item) => (item.id === editItem.id ? editItem : item)));
+    setIsEditOpen(false);
+    setEditItem(null);
+    toast.success('Материал обновлен!');
+  };
+
+  const handleDeleteItem = (id: string) => {
+    setItems(items.filter((item) => item.id !== id));
+    setViewItem(null);
+    toast.success('Материал удален!');
+  };
+
+  const openEditDialog = (item: MediaItem) => {
+    setEditItem(item);
+    setIsEditOpen(true);
+    setViewItem(null);
   };
 
   const filteredItems = activeCategory === 'all' ? items : items.filter((item) => item.category === activeCategory);
@@ -370,17 +396,136 @@ const Index = () => {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 pt-2">
-                  <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-medium text-sm">
-                    {viewItem.category}
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-secondary/10 text-secondary font-medium text-sm capitalize">
-                    {viewItem.type}
-                  </span>
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-medium text-sm">
+                      {viewItem.category}
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-secondary/10 text-secondary font-medium text-sm capitalize">
+                      {viewItem.type}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => openEditDialog(viewItem)}>
+                      <Icon name="Pencil" size={16} />
+                      Редактировать
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(viewItem.id)}>
+                      <Icon name="Trash2" size={16} />
+                      Удалить
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Редактировать материал</DialogTitle>
+          </DialogHeader>
+          {editItem && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-type">Тип материала</Label>
+                <Select value={editItem.type} onValueChange={(value) => setEditItem({ ...editItem, type: value as MediaType })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="video">🎥 Видео</SelectItem>
+                    <SelectItem value="audio">🎵 Аудио</SelectItem>
+                    <SelectItem value="image">🖼️ Изображение</SelectItem>
+                    <SelectItem value="text">📝 Текст</SelectItem>
+                    <SelectItem value="link">🔗 Ссылка</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-category">Категория</Label>
+                <Select value={editItem.category} onValueChange={(value) => setEditItem({ ...editItem, category: value as Category })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Достопримечательность">🏛️ Достопримечательность</SelectItem>
+                    <SelectItem value="Аудио">🎧 Аудио</SelectItem>
+                    <SelectItem value="Блюда">🍽️ Блюда</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">Название</Label>
+                <Input
+                  id="edit-title"
+                  placeholder="Введите название"
+                  value={editItem.title || ''}
+                  onChange={(e) => setEditItem({ ...editItem, title: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Описание</Label>
+                <Textarea
+                  id="edit-description"
+                  placeholder="Добавьте описание"
+                  value={editItem.description || ''}
+                  onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
+
+              {(editItem.type === 'video' || editItem.type === 'audio' || editItem.type === 'image' || editItem.type === 'link') && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-url">URL</Label>
+                  <Input
+                    id="edit-url"
+                    placeholder="https://example.com/file"
+                    value={editItem.url || ''}
+                    onChange={(e) => setEditItem({ ...editItem, url: e.target.value })}
+                  />
+                </div>
+              )}
+
+              {editItem.type === 'image' && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-thumbnail">Миниатюра (URL)</Label>
+                  <Input
+                    id="edit-thumbnail"
+                    placeholder="https://example.com/image.jpg"
+                    value={editItem.thumbnail || ''}
+                    onChange={(e) => setEditItem({ ...editItem, thumbnail: e.target.value })}
+                  />
+                </div>
+              )}
+
+              {editItem.type === 'text' && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-content">Текстовое содержимое</Label>
+                  <Textarea
+                    id="edit-content"
+                    placeholder="Введите текст"
+                    value={editItem.content || ''}
+                    onChange={(e) => setEditItem({ ...editItem, content: e.target.value })}
+                    rows={5}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex gap-2">
+            <Button onClick={handleEditItem} className="flex-1 bg-gradient-to-r from-primary to-secondary">
+              Сохранить
+            </Button>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)} className="flex-1">
+              Отмена
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
