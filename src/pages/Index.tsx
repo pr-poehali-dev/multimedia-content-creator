@@ -68,6 +68,7 @@ const Index = () => {
     category: 'Достопримечательность',
   });
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
+  const [viewItem, setViewItem] = useState<MediaItem | null>(null);
 
   const handleAddItem = () => {
     if (!newItem.title) {
@@ -103,6 +104,26 @@ const Index = () => {
       link: 'Link',
     };
     return icons[type];
+  };
+
+  const getEmbedUrl = (url: string) => {
+    if (!url) return null;
+    if (url.includes('youtube.com/watch')) {
+      const videoId = url.split('v=')[1]?.split('&')[0];
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    if (url.includes('youtu.be/')) {
+      const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    if (url.includes('youtube.com/embed')) {
+      return url;
+    }
+    return url;
+  };
+
+  const handleCardClick = (item: MediaItem) => {
+    setViewItem(item);
   };
 
   return (
@@ -251,6 +272,7 @@ const Index = () => {
             {filteredItems.map((item, index) => (
               <Card
                 key={item.id}
+                onClick={() => handleCardClick(item)}
                 className="overflow-hidden hover-scale fade-in border-2 hover:border-primary/50 transition-all cursor-pointer group"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
@@ -283,6 +305,84 @@ const Index = () => {
           </div>
         )}
       </main>
+
+      <Dialog open={!!viewItem} onOpenChange={() => setViewItem(null)}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+          {viewItem && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">{viewItem.title}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {viewItem.type === 'video' && viewItem.url && (
+                  <div className="aspect-video w-full bg-black rounded-lg overflow-hidden">
+                    <iframe
+                      src={getEmbedUrl(viewItem.url)}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+
+                {viewItem.type === 'audio' && viewItem.url && (
+                  <div className="w-full">
+                    <audio controls className="w-full">
+                      <source src={viewItem.url} type="audio/mpeg" />
+                      Ваш браузер не поддерживает аудио элемент.
+                    </audio>
+                  </div>
+                )}
+
+                {viewItem.type === 'image' && (viewItem.thumbnail || viewItem.url) && (
+                  <div className="w-full">
+                    <img
+                      src={viewItem.thumbnail || viewItem.url}
+                      alt={viewItem.title}
+                      className="w-full h-auto rounded-lg"
+                    />
+                  </div>
+                )}
+
+                {viewItem.type === 'text' && viewItem.content && (
+                  <div className="prose max-w-none">
+                    <p className="whitespace-pre-wrap">{viewItem.content}</p>
+                  </div>
+                )}
+
+                {viewItem.type === 'link' && viewItem.url && (
+                  <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                    <Icon name="Link" size={24} className="text-primary" />
+                    <a
+                      href={viewItem.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline break-all"
+                    >
+                      {viewItem.url}
+                    </a>
+                  </div>
+                )}
+
+                {viewItem.description && (
+                  <div className="pt-4 border-t">
+                    <p className="text-muted-foreground">{viewItem.description}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 pt-2">
+                  <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-medium text-sm">
+                    {viewItem.category}
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-secondary/10 text-secondary font-medium text-sm capitalize">
+                    {viewItem.type}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
