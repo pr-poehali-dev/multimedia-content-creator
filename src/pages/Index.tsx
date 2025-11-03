@@ -48,17 +48,17 @@ const Index = () => {
       id: '3',
       type: 'image',
       category: 'Блюда',
-      title: 'Чак-чак',
-      description: 'Традиционный татарский десерт из теста с медом',
-      thumbnail: 'https://images.unsplash.com/photo-1558326567-98ae2405596b?w=400',
+      title: 'Губадия',
+      description: 'Традиционный татарский новогодний пирог с многослойной начинкой',
+      thumbnail: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400',
     },
     {
       id: '4',
       type: 'image',
       category: 'Блюда',
-      title: 'Пельмени',
-      description: 'Классическое русское блюдо с мясной начинкой',
-      thumbnail: 'https://images.unsplash.com/photo-1626859638149-b11d8f7790a2?w=400',
+      title: 'Оливье',
+      description: 'Символ русского Нового года - салат с курицей и овощами',
+      thumbnail: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400',
     },
   ]);
 
