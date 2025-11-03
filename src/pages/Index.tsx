@@ -71,6 +71,53 @@ const Index = () => {
   const [viewItem, setViewItem] = useState<MediaItem | null>(null);
   const [editItem, setEditItem] = useState<MediaItem | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (file: File, fieldType: 'url' | 'thumbnail') => {
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        if (fieldType === 'url') {
+          setNewItem({ ...newItem, url: base64String });
+        } else {
+          setNewItem({ ...newItem, thumbnail: base64String });
+        }
+        toast.success('Файл загружен!');
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast.error('Ошибка загрузки файла');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleEditFileUpload = async (file: File, fieldType: 'url' | 'thumbnail') => {
+    if (!file || !editItem) return;
+
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        if (fieldType === 'url') {
+          setEditItem({ ...editItem, url: base64String });
+        } else {
+          setEditItem({ ...editItem, thumbnail: base64String });
+        }
+        toast.success('Файл загружен!');
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast.error('Ошибка загрузки файла');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleAddItem = () => {
     if (!newItem.title) {
@@ -231,12 +278,52 @@ const Index = () => {
 
                   {(newItem.type === 'video' || newItem.type === 'audio' || newItem.type === 'image' || newItem.type === 'link') && (
                     <div className="space-y-2">
-                      <Label htmlFor="url">URL</Label>
+                      <Label htmlFor="url">URL или файл</Label>
                       <Input
                         id="url"
                         placeholder="https://example.com/file"
                         value={newItem.url || ''}
                         onChange={(e) => setNewItem({ ...newItem, url: e.target.value })}
+                      />
+                      {(newItem.type === 'image' || newItem.type === 'audio' || newItem.type === 'video') && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">или</span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={uploading}
+                            onClick={() => document.getElementById('file-upload')?.click()}
+                          >
+                            <Icon name="Upload" size={16} />
+                            {uploading ? 'Загрузка...' : 'Загрузить файл'}
+                          </Button>
+                          <input
+                            id="file-upload"
+                            type="file"
+                            accept={
+                              newItem.type === 'image'
+                                ? 'image/*'
+                                : newItem.type === 'audio'
+                                ? 'audio/*'
+                                : 'video/*'
+                            }
+                            className="hidden"
+                            onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'url')}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {newItem.type === 'image' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="thumbnail">Миниатюра (опционально)</Label>
+                      <Input
+                        id="thumbnail"
+                        placeholder="https://example.com/thumbnail.jpg"
+                        value={newItem.thumbnail || ''}
+                        onChange={(e) => setNewItem({ ...newItem, thumbnail: e.target.value })}
                       />
                     </div>
                   )}
@@ -482,25 +569,73 @@ const Index = () => {
 
               {(editItem.type === 'video' || editItem.type === 'audio' || editItem.type === 'image' || editItem.type === 'link') && (
                 <div className="space-y-2">
-                  <Label htmlFor="edit-url">URL</Label>
+                  <Label htmlFor="edit-url">URL или файл</Label>
                   <Input
                     id="edit-url"
                     placeholder="https://example.com/file"
                     value={editItem.url || ''}
                     onChange={(e) => setEditItem({ ...editItem, url: e.target.value })}
                   />
+                  {(editItem.type === 'image' || editItem.type === 'audio' || editItem.type === 'video') && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">или</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploading}
+                        onClick={() => document.getElementById('edit-file-upload')?.click()}
+                      >
+                        <Icon name="Upload" size={16} />
+                        {uploading ? 'Загрузка...' : 'Загрузить файл'}
+                      </Button>
+                      <input
+                        id="edit-file-upload"
+                        type="file"
+                        accept={
+                          editItem.type === 'image'
+                            ? 'image/*'
+                            : editItem.type === 'audio'
+                            ? 'audio/*'
+                            : 'video/*'
+                        }
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleEditFileUpload(e.target.files[0], 'url')}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
               {editItem.type === 'image' && (
                 <div className="space-y-2">
-                  <Label htmlFor="edit-thumbnail">Миниатюра (URL)</Label>
+                  <Label htmlFor="edit-thumbnail">Миниатюра (опционально)</Label>
                   <Input
                     id="edit-thumbnail"
                     placeholder="https://example.com/image.jpg"
                     value={editItem.thumbnail || ''}
                     onChange={(e) => setEditItem({ ...editItem, thumbnail: e.target.value })}
                   />
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">или</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploading}
+                      onClick={() => document.getElementById('edit-thumbnail-upload')?.click()}
+                    >
+                      <Icon name="Upload" size={16} />
+                      {uploading ? 'Загрузка...' : 'Загрузить миниатюру'}
+                    </Button>
+                    <input
+                      id="edit-thumbnail-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleEditFileUpload(e.target.files[0], 'thumbnail')}
+                    />
+                  </div>
                 </div>
               )}
 
