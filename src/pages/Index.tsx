@@ -32,7 +32,7 @@ const Index = () => {
       category: 'Достопримечательность',
       title: 'Мечеть Кул Шариф в Казани',
       description: 'Величественная мечеть в сердце Казанского Кремля',
-      url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+      url: 'https://www.youtube.com/watch?v=Jqn3V8EJVPg',
       thumbnail: 'https://images.unsplash.com/photo-1604999333679-b86d54738315?w=400',
     },
     {
